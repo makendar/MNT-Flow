@@ -1,0 +1,2 @@
+customer_code,invoice_number,payment_date,amount,reference,mode
+C001,DPC/26-27/9001,20-10-2026,"50,000",NEFT/EXAMPLE/0001,bank_transfer

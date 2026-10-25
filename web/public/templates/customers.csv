@@ -1,0 +1,2 @@
+code,name,segment,gstin,billing_address,shipping_address,city,state,primary_contact_name,primary_contact_email,primary_contact_phone,accounts_contact_name,accounts_contact_email,accounts_contact_phone,payment_terms_days,owner_email,tags
+C100,Example Engineering Works,Precision components,,"12 Example Road, Coimbatore","12 Example Road, Coimbatore",Coimbatore,Tamil Nadu,R. Example,purchase@example.com,+91 90000 00000,Accounts Team,accounts@example.com,+91 90000 00001,30,sales@demo-precision.example,"new,engineering"

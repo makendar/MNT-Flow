@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-nav: #0f1b2d;
+  --color-nav-2: #172a45;
+}
+
+html,
+body {
+  background: var(--color-slate-50);
+  color: var(--color-slate-800);
+}
+
+body {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)];
+  }
+  .card-h {
+    @apply flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-2.5;
+  }
+  .card-t {
+    @apply text-[13px] font-semibold text-slate-900;
+  }
+  .btn {
+    @apply inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-blue-700 bg-blue-700 text-white hover:bg-blue-800;
+  }
+  .btn-danger {
+    @apply border-red-200 bg-white text-red-700 hover:bg-red-50;
+  }
+  .btn-sm {
+    @apply h-7 px-2 text-xs;
+  }
+  .input {
+    @apply h-8 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px] text-slate-800 placeholder:text-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20 disabled:bg-slate-50;
+  }
+  textarea.input {
+    @apply h-auto py-1.5;
+  }
+  .label {
+    @apply mb-1 block text-xs font-medium text-slate-600;
+  }
+  .tbl {
+    @apply w-full border-collapse text-[13px];
+  }
+  .tbl th {
+    @apply whitespace-nowrap border-b border-slate-200 bg-slate-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500;
+  }
+  .tbl td {
+    @apply border-b border-slate-100 px-3 py-2 align-top;
+  }
+  .tbl tbody tr:hover td {
+    @apply bg-slate-50/70;
+  }
+  .tbl tfoot td {
+    @apply border-t border-slate-200 bg-slate-50 px-3 py-2 font-semibold;
+  }
+  .link {
+    @apply text-blue-700 hover:underline;
+  }
+  .num {
+    @apply whitespace-nowrap text-right tabular-nums;
+  }
+  .muted {
+    @apply text-slate-500;
+  }
+  .dl {
+    @apply grid grid-cols-[minmax(110px,40%)_1fr] gap-x-3 gap-y-1.5 text-[13px];
+  }
+  .dl dt {
+    @apply text-slate-500;
+  }
+  .dl dd {
+    @apply text-slate-800;
+  }
+}

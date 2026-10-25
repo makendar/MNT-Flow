@@ -1,0 +1,392 @@
+// MNT Flow data model.
+// Local demo uses SQLite; production target is PostgreSQL (change `provider` and DATABASE_URL, then re-run migrations).
+// SQLite has no native enums, so status/category fields are strings validated in src/lib/domain/constants.ts.
+// Money is stored as Float rupees and always rounded to 2 decimals in the domain layer; use Decimal on PostgreSQL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id                     String   @id @default(cuid())
+  name                   String
+  isDemo                 Boolean  @default(false)
+  address                String   @default("")
+  timezone               String   @default("Asia/Kolkata")
+  currency               String   @default("INR")
+  fiscalYearStartMonth   Int      @default(4)
+  defaultPaymentTermsDays Int     @default(30)
+  logoUrl                String?
+  settingsJson           String   @default("{}")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  businessUnits BusinessUnit[]
+  users         User[]
+  customers     Customer[]
+}
+
+model BusinessUnit {
+  id    String       @id @default(cuid())
+  orgId String
+  name  String
+  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+}
+
+model User {
+  id           String       @id @default(cuid())
+  orgId        String
+  email        String       @unique
+  name         String
+  passwordHash String
+  role         String
+  team         String?
+  customerId   String? // set only for customer portal users
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  customer     Customer?    @relation("PortalUsers", fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+}
+
+model Customer {
+  id                   String   @id @default(cuid())
+  orgId                String
+  code                 String
+  name                 String
+  segment              String   @default("")
+  gstin                String?
+  billingAddress       String   @default("")
+  shippingAddress      String   @default("")
+  city                 String   @default("")
+  state                String   @default("")
+  primaryContactName   String   @default("")
+  primaryContactEmail  String   @default("")
+  primaryContactPhone  String   @default("")
+  procurementContactName  String @default("")
+  procurementContactEmail String @default("")
+  procurementContactPhone String @default("")
+  accountsContactName  String   @default("")
+  accountsContactEmail String   @default("")
+  accountsContactPhone String   @default("")
+  paymentTermsDays     Int      @default(30)
+  ownerId              String?
+  businessUnitId       String?
+  status               String   @default("active")
+  notes                String   @default("")
+  tags                 String   @default("")
+  isDemo               Boolean  @default(false)
+  importBatchId        String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  portalUsers User[]       @relation("PortalUsers")
+
+  @@unique([orgId, code])
+  @@index([orgId])
+}
+
+model Quotation {
+  id               String    @id @default(cuid())
+  orgId            String
+  number           String
+  customerId       String
+  quoteDate        DateTime
+  validUntil       DateTime?
+  amount           Float
+  ownerId          String?
+  status           String
+  lastContactDate  DateTime?
+  nextFollowUpDate DateTime?
+  lostReason       String?
+  feedback         String    @default("")
+  notes            String    @default("")
+  businessUnitId   String?
+  importBatchId    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([orgId, number])
+  @@index([orgId, customerId])
+}
+
+model SalesOrder {
+  id                   String    @id @default(cuid())
+  orgId                String
+  number               String
+  customerId           String
+  customerPoNumber     String    @default("")
+  orderDate            DateTime
+  value                Float
+  expectedDeliveryDate DateTime?
+  ownerId              String?
+  status               String
+  quotationId          String?
+  delayReason          String?
+  notes                String    @default("")
+  businessUnitId       String?
+  importBatchId        String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([orgId, number])
+  @@index([orgId, customerId])
+}
+
+model Dispatch {
+  id            String    @id @default(cuid())
+  orgId         String
+  orderId       String
+  customerId    String
+  challanNumber String
+  committedDate DateTime
+  dispatchDate  DateTime?
+  deliveredDate DateTime?
+  status        String // planned | dispatched | delivered
+  podReceived   Boolean   @default(false)
+  transporter   String    @default("")
+  notes         String    @default("")
+  ownerId       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([orgId, orderId])
+}
+
+model Invoice {
+  id               String    @id @default(cuid())
+  orgId            String
+  number           String
+  customerId       String
+  orderId          String?
+  invoiceDate      DateTime
+  dueDate          DateTime?
+  total            Float
+  currency         String    @default("INR")
+  onHold           Boolean   @default(false)
+  holdReason       String?
+  ownerId          String?
+  lastFollowUpDate DateTime?
+  nextFollowUpDate DateTime?
+  businessUnitId   String?
+  importBatchId    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([orgId, number])
+  @@index([orgId, customerId])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orgId         String
+  customerId    String
+  invoiceId     String? // null = unapplied payment (shown as an exception)
+  amount        Float
+  paymentDate   DateTime
+  reference     String   @default("")
+  mode          String   @default("bank_transfer")
+  importBatchId String?
+  createdById   String?
+  createdAt     DateTime @default(now())
+
+  @@index([orgId, invoiceId])
+}
+
+model CreditAdjustment {
+  id          String   @id @default(cuid())
+  orgId       String
+  invoiceId   String
+  amount      Float // positive amount reduces the invoice balance
+  type        String // credit_note | adjustment
+  reference   String   @default("")
+  date        DateTime
+  reason      String   @default("")
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@index([orgId, invoiceId])
+}
+
+model PaymentPromise {
+  id            String   @id @default(cuid())
+  orgId         String
+  invoiceId     String
+  customerId    String
+  amount        Float
+  promisedDate  DateTime
+  contactName   String
+  recordedAt    DateTime
+  notes         String   @default("")
+  status        String   @default("open") // open | cancelled; fulfilled/partial/missed are derived from payments
+  ownerId       String?
+  createdById   String?
+  importBatchId String?
+  createdAt     DateTime @default(now())
+
+  @@index([orgId, invoiceId])
+}
+
+model CollectionActivity {
+  id               String    @id @default(cuid())
+  orgId            String
+  customerId       String
+  invoiceId        String?
+  occurredAt       DateTime
+  channel          String // call | email | meeting | other
+  summary          String
+  customerResponse String    @default("")
+  nextStep         String    @default("")
+  nextFollowUpDate DateTime?
+  userId           String?
+  createdAt        DateTime  @default(now())
+
+  @@index([orgId, customerId])
+}
+
+model Issue {
+  id                String    @id @default(cuid())
+  orgId             String
+  number            String
+  customerId        String
+  invoiceId         String?
+  orderId           String?
+  category          String
+  title             String
+  description       String    @default("")
+  reportedBy        String    @default("")
+  source            String    @default("internal") // internal | portal
+  ownerId           String?
+  team              String?
+  priority          String    @default("medium")
+  dueDate           DateTime?
+  status            String    @default("open")
+  rootCause         String?
+  resolutionNotes   String?
+  missingEvidence   String?
+  nextAction        String?
+  blocksPayment     Boolean   @default(false)
+  customerConfirmed Boolean   @default(false)
+  unblockConfirmed  Boolean   @default(false)
+  resolvedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([orgId, number])
+  @@index([orgId, customerId])
+}
+
+model Task {
+  id            String    @id @default(cuid())
+  orgId         String
+  title         String
+  description   String    @default("")
+  customerId    String?
+  invoiceId     String?
+  orderId       String?
+  issueId       String?
+  ownerId       String?
+  priority      String    @default("medium")
+  dueDate       DateTime?
+  status        String    @default("open") // open | in_progress | done
+  createdById   String?
+  completedById String?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([orgId, ownerId])
+}
+
+model ActionItem {
+  id                String    @id @default(cuid())
+  orgId             String
+  key               String // stable source key, e.g. inv-overdue:<invoiceId>
+  category          String
+  title             String
+  customerId        String?
+  invoiceId         String?
+  orderId           String?
+  issueId           String?
+  quotationId       String?
+  taskId            String?
+  promiseId         String?
+  amount            Float?
+  ownerId           String?
+  dueDate           DateTime?
+  priority          String
+  priorityScore     Int
+  priorityReason    String
+  recommendedAction String
+  status            String    @default("open") // open | completed
+  resolution        String?
+  systemClosed      Boolean   @default(false)
+  completedAt       DateTime?
+  completedById     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([orgId, key])
+  @@index([orgId, status])
+}
+
+// Timeline + audit trail. Never updated or deleted by application code (except full demo reset).
+model ActivityEvent {
+  id         String   @id @default(cuid())
+  orgId      String
+  entityType String
+  entityId   String
+  customerId String?
+  kind       String // comment | created | updated | status_change | import | system | document | ai_draft
+  source     String   @default("user") // user | import | system | portal
+  visibility String   @default("internal") // internal | customer
+  message    String
+  userId     String?
+  createdAt  DateTime @default(now())
+
+  @@index([orgId, entityType, entityId])
+  @@index([orgId, customerId])
+}
+
+model Document {
+  id                 String   @id @default(cuid())
+  orgId              String
+  customerId         String?
+  invoiceId          String?
+  orderId            String?
+  issueId            String?
+  type               String
+  fileName           String
+  mimeType           String
+  size               Int
+  storageKey         String? // null for synthetic seeded documents
+  sharedWithCustomer Boolean  @default(false)
+  uploadedById       String?
+  uploadedByPortal   Boolean  @default(false)
+  isSynthetic        Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  @@index([orgId, customerId])
+}
+
+model ImportBatch {
+  id          String   @id @default(cuid())
+  orgId       String
+  entityType  String
+  fileName    String
+  status      String   @default("committed") // committed | rolled_back
+  createdById String?
+  summaryJson String   @default("{}")
+  createdAt   DateTime @default(now())
+
+  @@index([orgId])
+}

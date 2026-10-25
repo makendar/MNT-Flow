@@ -1,0 +1,2 @@
+number,customer_code,customer_po,order_date,value,expected_delivery_date,status,owner_email,quotation_number
+SO/26-27/9001,C001,KPM/PO/2026/9001,05-10-2026,"3,10,000",05-11-2026,confirmed,dispatch@demo-precision.example,

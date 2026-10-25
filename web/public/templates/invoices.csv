@@ -1,0 +1,2 @@
+number,customer_code,invoice_date,due_date,total,currency,order_number,owner_email
+DPC/26-27/9001,C001,05-10-2026,04-11-2026,"1,18,000.00",INR,,finance@demo-precision.example

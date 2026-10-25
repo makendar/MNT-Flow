@@ -1,0 +1,5 @@
+Customer Code,Party Name,Industry,GSTIN,City,State,Contact Person,Email,Phone,Credit Days,tags
+C011,Kongu Hydraulics Pvt. Ltd. (Demo),Hydraulics,,Coimbatore,Tamil Nadu,P. Sathish,purchase@kongu-hydraulics.example,+91 90000 01101,45,"demo,hydraulics"
+C012,Krishnagiri Gears & Drives (Demo),Power transmission,,Krishnagiri,Tamil Nadu,A. Mohan,purchase@kgd.example,+91 90000 01201,30,"demo,gears"
+C013,Peenya Sheet Metal Works (Demo),Fabrication,,Bengaluru,Karnataka,Ravi Kumar,not-an-email,+91 90000 01301,30,demo
+C001,Kovai Pumps & Motors Pvt. Ltd.,Pumps & motors,,Coimbatore,Tamil Nadu,S. Balaji,purchase@kovai.example,+91 90000 00011,30,"demo,key-account"

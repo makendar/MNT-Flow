@@ -1,0 +1,2 @@
+number,customer_code,quote_date,valid_until,amount,status,owner_email,next_follow_up_date,notes
+QT/26-27/9001,C001,01-10-2026,31-10-2026,"2,50,000",sent,sales@demo-precision.example,15-10-2026,Example quotation
